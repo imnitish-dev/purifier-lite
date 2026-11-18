@@ -156,6 +156,7 @@ public class MainActivity extends Activity {
         LinearLayout pr = row();
         EditText pass = field("Mi account password");
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        pass.setTypeface(android.graphics.Typeface.DEFAULT);
         pass.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
         pr.addView(pass, new LinearLayout.LayoutParams(0, -2, 1));
         TextView eye = label("Show", 13, ACCENT);
@@ -163,6 +164,7 @@ public class MainActivity extends Activity {
         eye.setOnClickListener(v -> {
             boolean hidden = (pass.getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == InputType.TYPE_TEXT_VARIATION_PASSWORD;
             pass.setInputType(InputType.TYPE_CLASS_TEXT | (hidden ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD : InputType.TYPE_TEXT_VARIATION_PASSWORD));
+            pass.setTypeface(android.graphics.Typeface.DEFAULT);
             pass.setSelection(pass.getText().length());
             eye.setText(hidden ? "Hide" : "Show");
         });
@@ -270,7 +272,7 @@ public class MainActivity extends Activity {
             int pmColor = Cloud.pmColor(pm);
             String pmText = Cloud.pmLabel(pm);
             android.widget.FrameLayout hero = new android.widget.FrameLayout(this);
-            PmRing ring = new PmRing(this);
+            PmRing ring = new PmRing(this, dp(108));
             hero.addView(ring, new android.widget.FrameLayout.LayoutParams(-1, -1));
             LinearLayout inner = new LinearLayout(this);
             inner.setOrientation(LinearLayout.VERTICAL); inner.setGravity(Gravity.CENTER);
@@ -278,7 +280,7 @@ public class MainActivity extends Activity {
             TextView big = label(String.valueOf(v[PM]), 64, FG); big.setTypeface(android.graphics.Typeface.create("sans-serif-light", 0));
             inner.addView(center(big));
             inner.addView(center(label("µg/m³ · " + pmText, 14, pmColor)));
-            hero.addView(inner, new android.widget.FrameLayout.LayoutParams(-1, -1));
+            hero.addView(inner, new android.widget.FrameLayout.LayoutParams(dp(216), dp(216), Gravity.CENTER));
             ring.set(pm, pmColor, OFF, on, shownPm);
             // count the number up/down to the new reading
             android.animation.ValueAnimator va = android.animation.ValueAnimator.ofInt(shownPm, pm).setDuration(animateIn ? 900 : 500);
@@ -288,8 +290,8 @@ public class MainActivity extends Activity {
             shownPm = pm;
             LinearLayout heroWrap = new LinearLayout(this); heroWrap.setGravity(Gravity.CENTER);
             hero.setOnClickListener(x -> { buzz(x); showPmScale(pm); });
-            heroWrap.addView(hero, new LinearLayout.LayoutParams(dp(230), dp(230)));
-            root.addView(heroWrap, lp(-1, -2, dp(12), dp(16)));
+            heroWrap.addView(hero, new LinearLayout.LayoutParams(-1, dp(300)));
+            root.addView(heroWrap, lp(-1, -2, 0, dp(4)));
 
             // Stats
             LinearLayout stats = row();
@@ -347,6 +349,7 @@ public class MainActivity extends Activity {
         out.setGravity(Gravity.CENTER); out.setPadding(0, dp(20), 0, dp(8));
         out.setOnClickListener(x -> { buzz(x); logout(); });
         root.addView(out, lp(-1, -2, 0, 0));
+        root.addView(center(label("Made with Claude Code", 11, SUB)), lp(-1, -2, dp(4), dp(8)));
         scroll.post(() -> scroll.scrollTo(0, y));
         if (animateIn) {
             // first load: cards slide up and fade in, one after another

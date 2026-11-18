@@ -44,13 +44,19 @@ CPU = process CPU time over 30 s with the app open.
 
 | | Purifier Lite | Xiaomi Home |
 |---|---|---|
-| Download size | **37 KB** | _to measure_ |
+| Download size | **~40 KB** | _to measure_ |
 | Cold start | **~96 ms** | _to measure_ |
 | Memory (PSS) | **~49 MB** | _to measure_ |
-| CPU while open | **~0.6 % of one core** (0.17 s per 30 s, incl. auto-refresh) | _to measure_ |
-| Background services | none | _to measure_ |
-| Permissions | Internet only | _to measure_ |
-| Ads / promos / account feed | none | yes |
+| CPU, open, purifier off | **~0.6 % of one core** (incl. auto-refresh) | _to measure_ |
+| CPU, open, purifier on | higher while the dust animation runs (24 fps); 0 when closed | _to measure_ |
+| Runs in background | no (the widget wakes up every 30 min, or when tapped) | _to measure_ |
+| Permissions | **1: Internet** | _to measure_ |
+
+Permissions in detail:
+- **Purifier Lite** asks for **Internet only**, which it needs to reach Xiaomi's cloud. No location, Bluetooth, camera,
+  microphone, contacts, storage, notifications or "run at startup". (Android 17 also lists *local network access*
+  for every app that has Internet; the app doesn't use it and it isn't granted.)
+- **Xiaomi Home**: _to measure_, read from the installed app with `adb shell dumpsys package com.xiaomi.smarthome`.
 
 **Why it's lighter:** it's a single screen built from Android's own views, with no web views, no plugin framework,
 no analytics SDKs, no image loading and no third-party libraries. It talks straight to one API and only for your purifier.
@@ -84,3 +90,10 @@ The purifier's property IDs come from its public MIoT spec:
 <https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-rmb1:2>
 
 Updates must be signed with the same key (`~/.android/debug.keystore`), or Android will refuse to install over the old version.
+
+## Made with Claude Code
+
+Every line in this repo was written by [Claude Code](https://claude.com/claude-code) (Anthropic's Claude Opus 5.5) in a single
+conversation, from plain-language requests: the Xiaomi cloud login and encrypted API client, the app UI, the animated PM2.5 ring,
+the widget, the build script and this README. The person behind it described what they wanted, tested it on their phone and steered.
+Claude Code read the purifier's public spec, built and installed the app over USB, checked it with screenshots, and measured the numbers above.
