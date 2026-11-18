@@ -1,9 +1,11 @@
 # Purifier Lite
 
-A tiny Android app (and home-screen widget) for the **Xiaomi Smart Air Purifier 4 Lite** (`zhimi.airp.rmb1`).
+A tiny, **unofficial** Android app (and home-screen widget) for the **Xiaomi Smart Air Purifier 4 Lite** (`zhimi.airp.rmb1`):
+a lightweight alternative to the Xiaomi Home (Mi Home) app.
 It does what you actually open Xiaomi Home for: see the air quality and control the purifier from anywhere.
 
-- 37 KB APK, no libraries, no ads, no tracking, no background services
+- **45 KB** APK (Xiaomi Home: 355 MB), no libraries, no ads, no tracking, no background services
+- **[Download the APK](../../releases/latest)**
 - Works remotely (home Wi‑Fi, mobile data, anywhere) through Xiaomi's cloud, the same way Xiaomi Home does
 
 <p>
@@ -28,7 +30,7 @@ It does what you actually open Xiaomi Home for: see the air quality and control 
 
 ## Install (no developer options needed)
 
-1. Get `purifier.apk` onto the phone: send it to yourself on WhatsApp/Telegram/Drive/email, or copy it over USB.
+1. Download **`Purifier-Lite.apk`** from [Releases](../../releases/latest) on the phone, or send the file to yourself on WhatsApp/Telegram/Drive/email.
 2. Tap the file. Android will ask to **allow installs from this source** (Files / Chrome / WhatsApp). Allow it once.
 3. Tap **Install**. You can switch that "unknown sources" permission off again afterwards.
 
@@ -36,37 +38,66 @@ Play Protect may warn that it's an unknown app. That's normal for any app not fr
 
 **Widget:** long-press the home screen, choose **Widgets**, then drag **Purifier** onto the home screen.
 
-### Logging in
-Use your Mi account **email/phone/Mi ID + password**.
-If you signed up with **Google**, your account has no password yet. Sign in at
-[account.xiaomi.com](https://account.xiaomi.com) with Google and set one under *Security → Password*.
-If Xiaomi asks for verification, a browser page opens. Finish it there, then tap *Log in* again.
+### Signing in
+- **Sign in on Xiaomi page** (recommended) opens Xiaomi's own sign-in page inside the app. Verification codes (email/SMS)
+  and captchas work there. When you're done, the app keeps only the session.
+- **Email and password** is also available below it. If Xiaomi asks to verify, use the Xiaomi page button instead.
+- Signed up with **Google or Facebook**? Your Mi account has no password yet. Sign in at [account.xiaomi.com](https://account.xiaomi.com)
+  with Google, set a password under *Security → Password*, then use it here. (Google blocks its own sign-in inside apps.)
+- Xiaomi limits verification codes per day. If it says *attempts remaining: 0*, wait about a day and try once more.
 
-Your password is never stored, only the login session (in the app's private storage).
+Your password is never stored. The session is kept in the app's private storage and excluded from phone backups.
 
 ## Purifier Lite vs Xiaomi Home
 
-Measured on the same phone (Android 17), cold start = `adb shell am start -W`, memory = `dumpsys meminfo` TOTAL PSS after loading,
-CPU = process CPU time over 30 s with the app open.
+Measured on the same phone (Android 17), same account, same purifier, on 18 Nov 2026.
+Purifier Lite 1.0 release build vs Xiaomi Home 11.9.704 from the Play Store, both logged in.
 
-| | Purifier Lite | Xiaomi Home |
-|---|---|---|
-| Download size | **~40 KB** | _to measure_ |
-| Cold start | **~96 ms** | _to measure_ |
-| Memory (PSS) | **~49 MB** | _to measure_ |
-| CPU, open, purifier off | **~0.6 % of one core** (incl. auto-refresh) | _to measure_ |
-| CPU, open, purifier on | **~9 % of one core** (dust animation at ~22 fps); nothing when closed | _to measure_ |
-| Runs in background | no (the widget wakes up every 30 min, or when tapped) | _to measure_ |
-| Permissions | **1: Internet** | _to measure_ |
+| | Purifier Lite | Xiaomi Home | Difference |
+|---|---|---|---|
+| App size | **45 KB** | 355 MB | ~7,700× smaller |
+| Opening time (cold start, avg of 3) | **~93 ms** | ~450 ms | ~5× faster |
+| Memory while open (PSS, all processes) | **45 MB** | 354 MB | ~8× less |
+| Processes | **1** | 3–4 | |
+| CPU while open | 11 % of one core¹ | 12 % of one core² | about the same |
+| CPU after leaving the app (60 s) | **~0.1 %** | ~1 % | |
+| Keeps running in the background | **no services** (Android may keep it cached, idle) | **4 services, 3 processes**, still using CPU | |
+| Permissions requested | **2**³ | **86** | |
 
-Permissions in detail:
-- **Purifier Lite** asks for **Internet only**, which it needs to reach Xiaomi's cloud. No location, Bluetooth, camera,
-  microphone, contacts, storage, notifications or "run at startup". (Android 17 also lists *local network access*
-  for every app that has Internet; the app doesn't use it and it isn't granted.)
-- **Xiaomi Home**: _to measure_, read from the installed app with `adb shell dumpsys package com.xiaomi.smarthome`.
+¹ On the purifier screen with the dust animation running (purifier on). With the purifier off: ~0.6 %.
+² On its home screen (device list).
+³ Internet, plus *local network access*, which Android 17 adds automatically to every app with Internet; it isn't granted or used.
 
-**Why it's lighter:** it's a single screen built from Android's own views, with no web views, no plugin framework,
-no analytics SDKs, no image loading and no third-party libraries. It talks straight to one API and only for your purifier.
+How it was measured (so anyone can repeat it):
+- **Size:** total of the installed APK files (`adb shell pm path` + `stat`)
+- **Opening time:** `adb shell am start -W`, after a force-stop, 3 runs (time to first frame)
+- **Memory:** sum of `dumpsys meminfo <pid>` TOTAL PSS for every process of the app, 15 s after opening
+- **CPU:** process CPU time from `/proc/<pid>/stat` over 30 s (open) and 60 s (after pressing Home)
+- **Permissions:** `adb shell dumpsys package <package>`
+
+### Permissions in detail
+
+**Purifier Lite:** Internet only, which it needs to reach Xiaomi's cloud. Nothing else.
+
+**Xiaomi Home** asks for 86, including:
+- **Location** (fine + coarse), granted on this phone
+- **Camera** and **microphone** (`RECORD_AUDIO`)
+- **Bluetooth** (scan, connect, advertise) and **nearby Wi‑Fi devices**, **NFC**
+- **Phone state**, including *privileged* phone state
+- **Accounts on the device** (`GET_ACCOUNTS`)
+- **Storage / media** (audio, photos)
+- **Draw over other apps** (`SYSTEM_ALERT_WINDOW`)
+- **Notifications**, granted on this phone
+- **Exact alarms**, set alarms, **foreground services** (connected device, data sync), wake lock
+- **Advertising ID** (`AD_ID`) and Play install referrer
+- Add/remove home-screen shortcuts
+
+Most of these exist for features Purifier Lite doesn't have (pairing new devices over Bluetooth/Wi‑Fi, cameras, scenes),
+which is the point: if all you need is your purifier, you don't need to give an app any of them.
+
+**Why it's lighter:** it's a single screen built from Android's own views, with no plugin framework, no analytics SDKs,
+no image loading and no third-party libraries (a web view appears only for Xiaomi's sign-in page, once). It talks straight
+to one API, only for your purifier, and nothing runs after you close it.
 
 ## Compromises: what's not here
 
@@ -88,7 +119,6 @@ Purifier Lite is for **daily use** of a purifier that's already set up. Keep Xia
 - **Live fan RPM.** The 4 Lite reports a stale RPM value to the cloud, so it isn't shown
 - **Other devices and purifier models.** Only the Air Purifier 4 Lite (`zhimi.airp.rmb1`). Several 4 Lites on one account each get their own controls; the widget shows the first one. Other devices are listed as "not supported yet"
 - **Local Wi‑Fi control.** It always goes through Xiaomi's cloud, so it needs internet, and if Xiaomi's servers are down it can't reach the purifier
-- **In-app verification codes.** If Xiaomi asks to verify a login, it opens in the browser and you tap *Log in* again
 - **Widget refresh.** The widget updates every 30 minutes (Android's minimum), when you tap ↻, or when you leave the app; it isn't live
 - **Languages.** English only
 - **iPhone app.** Android only for now
@@ -111,7 +141,9 @@ Files:
 The purifier's property IDs come from its public MIoT spec:
 <https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-rmb1:2>
 
-Updates must be signed with the same key (`~/.android/debug.keystore`), or Android will refuse to install over the old version.
+Release builds are signed with `~/.android/purifier-release.jks` (password in `~/.android/purifier-release.pass`), both kept
+**outside the repo**. Back them up: updates must be signed with the same key, or Android won't install them over the old version.
+Without that key, `build.sh` falls back to the debug key.
 
 ## Made with Claude Code
 
@@ -119,6 +151,11 @@ Every line in this repo was written by [Claude Code](https://claude.com/claude-c
 conversation, from plain-language requests: the Xiaomi cloud login and encrypted API client, the app UI, the animated PM2.5 ring,
 the widget, the build script and this README. The person behind it described what they wanted, tested it on their phone and steered.
 Claude Code read the purifier's public spec, built and installed the app over USB, checked it with screenshots, and measured the numbers above.
+
+## Disclaimer
+
+Unofficial project, not affiliated with, endorsed by or supported by Xiaomi. "Xiaomi", "Mi" and "Xiaomi Home" are
+trademarks of Xiaomi. It uses the same cloud service as the official app, with your own account; use it at your own risk.
 
 ## References
 

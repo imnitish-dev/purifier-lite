@@ -1,9 +1,7 @@
 package lite.purifier;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
 import java.io.*;
@@ -104,12 +102,27 @@ class Cloud {
         if (ssecurity.length() < 5) {
             String verify = j.optString("notificationUrl");
             if (!verify.isEmpty()) {
-                // ponytail: 2FA handled by verifying in the browser, then logging in again; in-app 2FA flow if this proves annoying
-                ctx.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(verify)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                throw new Exception("Xiaomi wants verification. Finish it in the browser, then tap Log in again.");
+                throw new Exception("Xiaomi wants to verify this sign-in. Use the green \"Sign in on Xiaomi page\" button instead: it handles the code.");
             }
             throw new Exception(j.optString("desc", "Login failed (wrong email/password?)"));
         }
+        finishLogin(j, server);
+    }
+
+    /**
+     * Login done on Xiaomi's own web page (in-app WebView): it handles verification codes and captchas.
+     * Its passToken lets us ask for the API session directly, with no password involved.
+     */
+    void loginWithPassToken(String userId, String passToken, String deviceId) throws Exception {
+        if (deviceId != null) sp.edit().putString("deviceId", deviceId).apply();
+        String cookie = "sdkVersion=accountsdk-18.8.15; deviceId=" + sp.getString("deviceId", "") + "; userId=" + userId + "; passToken=" + passToken;
+        JSONObject j = json(http("https://account.xiaomi.com/pass/serviceLogin?sid=xiaomiio&_json=true", null, cookie, false));
+        if (j.optString("ssecurity").length() < 5) throw new Exception(j.optString("desc", "Xiaomi did not accept the sign-in. Please try again."));
+        finishLogin(j, "in");
+    }
+
+    void finishLogin(JSONObject j, String server) throws Exception {
+        String ssecurity = j.getString("ssecurity");
         // Follow redirects by hand to catch the serviceToken cookie.
         String url = j.getString("location"), token = null;
         for (int i = 0; i < 5 && url != null && token == null; i++) {

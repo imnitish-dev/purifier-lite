@@ -13,6 +13,13 @@ javac --release 8 -cp $JAR -d out/classes $(find src out/gen -name '*.java')
 $BT/d8 --lib $JAR --min-api 26 --output out $(find out/classes -name '*.class')
 (cd out && zip -q base.apk classes.dex)
 $BT/zipalign -f 4 out/base.apk out/aligned.apk
-$BT/apksigner sign --ks $KS --ks-pass pass:android --out purifier.apk out/aligned.apk
+# Release key (kept outside the repo; back it up, or future updates can't install over this version).
+# Falls back to the debug key on machines without it.
+RK=~/.android/purifier-release.jks; RP=~/.android/purifier-release.pass
+if [ -f $RK ]; then
+  $BT/apksigner sign --v1-signing-enabled false --ks $RK --ks-key-alias purifier --ks-pass file:$RP --out purifier.apk out/aligned.apk
+else
+  $BT/apksigner sign --v1-signing-enabled false --ks $KS --ks-pass pass:android --out purifier.apk out/aligned.apk
+fi
 ls -lh purifier.apk
 [ "$1" = install ] && adb install -r purifier.apk && adb shell am start -n lite.purifier/.MainActivity

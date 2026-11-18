@@ -141,10 +141,22 @@ public class MainActivity extends Activity {
         logoWrap.addView(logo, new LinearLayout.LayoutParams(dp(84), dp(84)));
         root.addView(logoWrap, lp(-1, -2, dp(56), dp(16)));
 
-        TextView title = center(label("Purifier", 30, FG));
+        TextView title = center(label("Purifier Lite", 30, FG));
         title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         root.addView(title);
         root.addView(center(label("Sign in with your Mi account to control your purifier from anywhere.", 14, SUB)), lp(-1, -2, dp(4), dp(8)));
+        TextView err = label("", 14, WARN);
+        err.setVisibility(View.GONE);
+        err.setBackground(rounded(0x33F5C542, 14));
+        err.setPadding(dp(14), dp(12), dp(14), dp(12));
+
+        root.addView(err, lp(-1, -2, dp(8), 0));
+        TextView web = pill("Sign in on Xiaomi page", true);
+        web.setTextSize(17); web.setPadding(0, dp(16), 0, dp(16));
+        web.setOnClickListener(v -> { buzz(v); err.setVisibility(View.GONE); showXiaomiLogin(err); });
+        root.addView(web, lp(-1, -2, dp(12), 0));
+        root.addView(center(label("Recommended. Works with verification codes.", 12, SUB)), lp(-1, -2, dp(6), 0));
+        root.addView(center(label("or with email and password", 13, SUB)), lp(-1, -2, dp(18), 0));
 
         LinearLayout c = card();
         c.addView(label("Email, phone or Mi ID", 13, SUB));
@@ -172,13 +184,8 @@ public class MainActivity extends Activity {
         c.addView(pr);
         root.addView(c);
 
-        TextView err = label("", 14, WARN);
-        err.setVisibility(View.GONE);
-        err.setBackground(rounded(0x33F5C542, 14));
-        err.setPadding(dp(14), dp(12), dp(14), dp(12));
-        root.addView(err, lp(-1, -2, dp(12), 0));
 
-        TextView login = pill("Log in", true);
+        TextView login = pill("Log in", false);
         login.setTextSize(17); login.setPadding(0, dp(16), 0, dp(16));
         Runnable go = () -> {
             String u = user.getText().toString().trim(), pw = pass.getText().toString();
@@ -194,7 +201,7 @@ public class MainActivity extends Activity {
                 } catch (Exception e) {
                     android.util.Log.w("Purifier", "login", e);
                     String m = e instanceof IOException ? "Can't reach Xiaomi. Check your internet and try again." : e.getMessage();
-                    ui(() -> { err.setText(m); err.setVisibility(View.VISIBLE); login.setEnabled(true); login.setText("Log in"); login.setAlpha(1f); });
+                    ui(() -> { err.setText(m); err.setVisibility(View.VISIBLE); login.setEnabled(true); login.setText("Log in"); login.setAlpha(1f); scroll.smoothScrollTo(0, 0); });
                 }
             });
         };
@@ -477,6 +484,47 @@ public class MainActivity extends Activity {
         d.show();
         d.getWindow().setBackgroundDrawable(rounded(CARD, 24));
         d.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(ACCENT);
+    }
+
+    /** Xiaomi's own sign-in page in a WebView: handles verification codes/captchas; we only pick up its passToken. */
+    void showXiaomiLogin(TextView err) {
+        android.webkit.CookieManager cm = android.webkit.CookieManager.getInstance();
+        cm.removeAllCookies(null);
+        android.webkit.WebView wv = new android.webkit.WebView(this);
+        wv.getSettings().setJavaScriptEnabled(true);
+        wv.getSettings().setDomStorageEnabled(true);
+        android.app.Dialog d = new android.app.Dialog(this, android.R.style.Theme_DeviceDefault_Light_NoActionBar);
+        d.setContentView(wv);
+        d.setOnDismissListener(x -> { wv.stopLoading(); wv.destroy(); });
+        wv.setWebViewClient(new android.webkit.WebViewClient() {
+            boolean done;
+            @Override public void onPageFinished(android.webkit.WebView v, String url) { check(); }
+            @Override public void doUpdateVisitedHistory(android.webkit.WebView v, String url, boolean reload) { check(); }
+            void check() {
+                String all = cm.getCookie("https://account.xiaomi.com");
+                String pt = cookie(all, "passToken"), uid = cookie(all, "userId"), dev = cookie(all, "deviceId");
+                if (done || pt == null || uid == null) return;
+                done = true;
+                d.dismiss();
+                cm.removeAllCookies(null); // the app keeps its own session; don't leave the web one lying around
+                loading();
+                bg.execute(() -> {
+                    try { cloud.loginWithPassToken(uid, pt, dev); ui(MainActivity.this::onResume); }
+                    catch (Exception e) {
+                        android.util.Log.w("Purifier", "web login", e);
+                        ui(() -> { showLogin(); toast("Sign-in failed: " + e.getMessage()); });
+                    }
+                });
+            }
+        });
+        wv.loadUrl("https://account.xiaomi.com/pass/serviceLogin?sid=xiaomiio&_locale=en_IN");
+        d.show();
+    }
+
+    static String cookie(String all, String name) {
+        if (all == null) return null;
+        for (String c : all.split(";\\s*")) if (c.startsWith(name + "=") && c.length() > name.length() + 1) return c.substring(name.length() + 1);
+        return null;
     }
 
     TextView center(TextView t) {
