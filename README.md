@@ -6,6 +6,13 @@ It does what you actually open Xiaomi Home for: see the air quality and control 
 - 37 KB APK, no libraries, no ads, no tracking, no background services
 - Works remotely (home Wi‑Fi, mobile data, anywhere) through Xiaomi's cloud, the same way Xiaomi Home does
 
+<p>
+  <img src="screenshots/main-dark.png" width="200" alt="Main screen, dark theme">
+  <img src="screenshots/main-light.png" width="200" alt="Main screen, light theme">
+  <img src="screenshots/pm-scale.png" width="200" alt="PM2.5 levels explained">
+  <img src="screenshots/login.png" width="200" alt="Login screen">
+</p>
+
 ## Features
 
 - Animated PM2.5 ring, using the same colours as the purifier's own light (Xiaomi 4 Lite manual: green 0–20, yellow 21–35, orange 36–55, red 56+). Tap it to see what each level means and where you are now
