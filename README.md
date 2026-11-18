@@ -68,15 +68,30 @@ Permissions in detail:
 **Why it's lighter:** it's a single screen built from Android's own views, with no web views, no plugin framework,
 no analytics SDKs, no image loading and no third-party libraries. It talks straight to one API and only for your purifier.
 
-**What Xiaomi Home does that this doesn't:** adding or pairing new devices, firmware updates, other device types,
-scenes/automations, sharing devices with family, and voice-assistant linking. Keep Xiaomi Home for setup, then use this every day.
+## Compromises: what's not here
 
-## Limitations
+Purifier Lite is for **daily use** of a purifier that's already set up. Keep Xiaomi Home installed (or reinstall it when needed) for the rest.
 
-- Supports the Air Purifier 4 Lite (`zhimi.airp.rmb1`). **Several 4 Lites on one account each get their own controls**; the widget shows the first one. Other models are listed as "not supported yet".
-- Live fan RPM isn't available: the 4 Lite reports a stale RPM value to the cloud, so the app doesn't show it.
-- The widget updates every 30 minutes (Android's minimum), when you tap ↻, or when you leave the app.
-- Needs internet; it doesn't control the purifier over local Wi‑Fi.
+**Needs Xiaomi Home:**
+- **Adding or pairing a new device**, Wi‑Fi setup, moving the purifier to a new Wi‑Fi network
+- **Firmware updates** for the purifier
+- **Renaming** the device, rooms and homes
+- **Sharing** the purifier with family members
+- **Scenes and automations**, e.g. turn on at 10 pm, or when another sensor reports bad air
+- **Schedules and timers**
+- **Voice assistants** (Alexa, Google Assistant) linking
+- **Creating a Mi account** or signing in with Google/Facebook (Purifier Lite needs an email/phone + password)
+
+**Not in Purifier Lite:**
+- **History and charts.** It shows the current reading only, no PM2.5 graph over days or weeks
+- **Notifications.** Warnings (bad air, filter, fault, offline) show inside the app, not as phone notifications
+- **Live fan RPM.** The 4 Lite reports a stale RPM value to the cloud, so it isn't shown
+- **Other devices and purifier models.** Only the Air Purifier 4 Lite (`zhimi.airp.rmb1`). Several 4 Lites on one account each get their own controls; the widget shows the first one. Other devices are listed as "not supported yet"
+- **Local Wi‑Fi control.** It always goes through Xiaomi's cloud, so it needs internet, and if Xiaomi's servers are down it can't reach the purifier
+- **In-app verification codes.** If Xiaomi asks to verify a login, it opens in the browser and you tap *Log in* again
+- **Widget refresh.** The widget updates every 30 minutes (Android's minimum), when you tap ↻, or when you leave the app; it isn't live
+- **Languages.** English only
+- **iPhone app.** Android only for now
 
 ## Build
 
