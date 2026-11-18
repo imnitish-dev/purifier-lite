@@ -5,7 +5,7 @@ a lightweight alternative to the Xiaomi Home (Mi Home) app.
 It does what you actually open Xiaomi Home for: see the air quality and control the purifier from anywhere.
 
 - **50 KB** APK (Xiaomi Home: 355 MB), no libraries, no ads, no tracking, no background services
-- **[Download the APK](../../releases/latest)**
+- **[⬇ Download Purifier-Lite.apk](https://github.com/imnitish-dev/purifier-lite/releases/latest/download/Purifier-Lite.apk)** (always the latest version) · [all releases](https://github.com/imnitish-dev/purifier-lite/releases)
 - Works remotely (home Wi‑Fi, mobile data, anywhere) through Xiaomi's cloud, the same way Xiaomi Home does
 
 <p>
