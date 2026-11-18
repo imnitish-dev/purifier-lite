@@ -48,7 +48,7 @@ CPU = process CPU time over 30 s with the app open.
 | Cold start | **~96 ms** | _to measure_ |
 | Memory (PSS) | **~49 MB** | _to measure_ |
 | CPU, open, purifier off | **~0.6 % of one core** (incl. auto-refresh) | _to measure_ |
-| CPU, open, purifier on | higher while the dust animation runs (24 fps); 0 when closed | _to measure_ |
+| CPU, open, purifier on | **~9 % of one core** (dust animation at ~22 fps); nothing when closed | _to measure_ |
 | Runs in background | no (the widget wakes up every 30 min, or when tapped) | _to measure_ |
 | Permissions | **1: Internet** | _to measure_ |
 
@@ -66,7 +66,7 @@ scenes/automations, sharing devices with family, and voice-assistant linking. Ke
 
 ## Limitations
 
-- Only the Air Purifier 4 Lite (`zhimi.airp.rmb1`). Other devices are listed as "not supported yet".
+- Supports the Air Purifier 4 Lite (`zhimi.airp.rmb1`). **Several 4 Lites on one account each get their own controls**; the widget shows the first one. Other models are listed as "not supported yet".
 - Live fan RPM isn't available: the 4 Lite reports a stale RPM value to the cloud, so the app doesn't show it.
 - The widget updates every 30 minutes (Android's minimum), when you tap ↻, or when you leave the app.
 - Needs internet; it doesn't control the purifier over local Wi‑Fi.
@@ -97,3 +97,16 @@ Every line in this repo was written by [Claude Code](https://claude.com/claude-c
 conversation, from plain-language requests: the Xiaomi cloud login and encrypted API client, the app UI, the animated PM2.5 ring,
 the widget, the build script and this README. The person behind it described what they wanted, tested it on their phone and steered.
 Claude Code read the purifier's public spec, built and installed the app over USB, checked it with screenshots, and measured the numbers above.
+
+## References
+
+Used to build this, and useful for adding features or other purifier models:
+
+- **Purifier 4 Lite control spec** (every property and its ID): [miot-spec.org: zhimi-rmb1](https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-rmb1:2)
+- **All Xiaomi device specs** (to add another model, find its `model` here): [miot-spec.org instance list](https://miot-spec.org/miot-spec-v2/instances?status=all) · [home.miot-spec.com](https://home.miot-spec.com)
+- **PM2.5 light-ring colours**, Xiaomi 4 Lite manual: [copy 1](https://manuals.plus/m/fed300c525f5c55d1b87965d8a602b0759707833f854db617a5388eb817006d9) · [copy 2](https://manuals.plus/m/e336ffbb5768d0babc3768561279abd0080439ab50c00d0f2ef43dd4b03da60d)
+- **Red band (> 55 µg/m³)**, Xiaomi Air Purifier 4 manual: [manuals.plus](https://manuals.plus/m/b38a75159a58d928a269e5e66c37dad2d2ff20a4e51694ccd3f7b933b91e1770)
+- **Xiaomi support FAQ, 4 Lite**: [mi.com](https://www.mi.com/global/support/faq/details/KA-691592)
+- **Xiaomi's official Home Assistant integration** (open-source reference for the cloud API): [XiaoMi/ha_xiaomi_home](https://github.com/XiaoMi/ha_xiaomi_home)
+- **Cloud login + RC4-signed API, same scheme as `Cloud.java`**: [PiotrMachowski/Xiaomi-cloud-tokens-extractor](https://github.com/PiotrMachowski/Xiaomi-cloud-tokens-extractor)
+- **Local (LAN) control without the cloud**: [rytilahti/python-miio](https://github.com/rytilahti/python-miio)

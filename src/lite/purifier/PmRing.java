@@ -27,6 +27,9 @@ class PmRing extends View {
     int color, track, count;
     boolean running;
     long lastFrame;
+    // One pending frame at a time: other redraws (e.g. the ring drawing in) must not start extra frame loops.
+    boolean frameQueued;
+    final Runnable nextFrame = () -> { frameQueued = false; invalidate(); };
 
     PmRing(Context c, float ringRadiusPx) {
         super(c);
@@ -56,6 +59,8 @@ class PmRing extends View {
         pz[i] = ringRadius * (0.012f + rnd.nextFloat() * 0.022f);
     }
 
+    @Override protected void onDetachedFromWindow() { removeCallbacks(nextFrame); frameQueued = false; super.onDetachedFromWindow(); }
+
     @Override protected void onDraw(Canvas c) {
         float cx = getWidth() / 2f, cy = getHeight() / 2f, w = ringRadius * 0.085f;
         float outer = outerRadius();
@@ -77,7 +82,7 @@ class PmRing extends View {
                 dot.setAlpha((int) (200 * Math.max(0f, Math.min(fadeIn, fadeOut))));
                 c.drawCircle(cx + (float) Math.cos(pa[i]) * pr[i], cy + (float) Math.sin(pa[i]) * pr[i], pz[i] * (0.6f + fadeOut * 0.4f), dot);
             }
-            postInvalidateDelayed(42); // ~24 fps: plenty for slow dust; stops when the purifier is off or the app is closed
+            if (!frameQueued) { frameQueued = true; postDelayed(nextFrame, 42); } // ~24 fps, exactly one pending frame
         }
 
         box.set(cx - ringRadius, cy - ringRadius, cx + ringRadius, cy + ringRadius);
