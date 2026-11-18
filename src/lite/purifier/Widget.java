@@ -12,7 +12,7 @@ import android.widget.RemoteViews;
 public class Widget extends AppWidgetProvider {
     static final String TOGGLE = "lite.purifier.TOGGLE", REFRESH = "lite.purifier.REFRESH";
 
-    @Override public void onUpdate(Context c, AppWidgetManager m, int[] ids) { update(c, false); }
+    @Override public void onUpdate(Context c, AppWidgetManager m, int[] ids) { FilterCheck.schedule(c); update(c, false); }
 
     @Override public void onReceive(Context c, Intent i) {
         super.onReceive(c, i);
@@ -45,7 +45,8 @@ public class Widget extends AppWidgetProvider {
                 rv.setTextViewText(R.id.pm, String.valueOf(v[Cloud.PM]));
                 rv.setTextColor(R.id.pm, color);
                 rv.setTextViewText(R.id.quality, "PM2.5 · " + q);
-                rv.setTextViewText(R.id.status, (on ? mode : "Off") + " · " + v[Cloud.HUM] + "% · " + v[Cloud.TEMP] + "°C · " + time);
+                String filter = FilterCheck.level(Cloud.num(v[Cloud.FILTER])) > 0 && v[Cloud.FILTER] instanceof Number ? "⚠ Filter " + v[Cloud.FILTER] + "% · " : "";
+                rv.setTextViewText(R.id.status, filter + (on ? mode : "Off") + " · " + v[Cloud.HUM] + "% · " + v[Cloud.TEMP] + "°C · " + time);
                 rv.setTextViewText(R.id.power, on ? "ON" : "OFF");
                 rv.setTextColor(R.id.power, on ? 0xFF0E1215 : 0xFFECF0F3);
                 rv.setInt(R.id.power, "setBackgroundResource", on ? R.drawable.btn_on : R.drawable.btn_off);

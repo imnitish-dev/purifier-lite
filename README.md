@@ -4,7 +4,7 @@ A tiny, **unofficial** Android app (and home-screen widget) for the **Xiaomi Sma
 a lightweight alternative to the Xiaomi Home (Mi Home) app.
 It does what you actually open Xiaomi Home for: see the air quality and control the purifier from anywhere.
 
-- **45 KB** APK (Xiaomi Home: 355 MB), no libraries, no ads, no tracking, no background services
+- **50 KB** APK (Xiaomi Home: 355 MB), no libraries, no ads, no tracking, no background services
 - **[Download the APK](../../releases/latest)**
 - Works remotely (home Wi‑Fi, mobile data, anywhere) through Xiaomi's cloud, the same way Xiaomi Home does
 
@@ -22,6 +22,7 @@ It does what you actually open Xiaomi Home for: see the air quality and control 
 - Power, mode (Auto / Sleep / Favorite), fan speed (shown in Favorite, the only mode where it applies)
 - Display brightness, child lock, beep
 - Warnings: device fault, filter almost worn out, poor air while the purifier is off, purifier offline
+- **Filter reminders:** a notification when the filter drops to 10 % and when it's used up (checked once a day by Android's scheduler; nothing keeps running). Re-arms after you fit a new filter
 - Keeps the air sensor reporting while the purifier is off (sends the purifier's "AQI update heartbeat" on every refresh)
 - Pull down to refresh, plus auto-refresh every 30 s while open
 - Light / Dark / Auto theme, light haptic tap feedback, small animations
@@ -55,18 +56,20 @@ Purifier Lite 1.0 release build vs Xiaomi Home 11.9.704 from the Play Store, bot
 
 | | Purifier Lite | Xiaomi Home | Difference |
 |---|---|---|---|
-| App size | **45 KB** | 355 MB | ~7,700× smaller |
+| App size | **50 KB** | 355 MB | ~7,000× smaller |
 | Opening time (cold start, avg of 3) | **~93 ms** | ~450 ms | ~5× faster |
 | Memory while open (PSS, all processes) | **45 MB** | 354 MB | ~8× less |
 | Processes | **1** | 3–4 | |
 | CPU while open | 11 % of one core¹ | 12 % of one core² | about the same |
 | CPU after leaving the app (60 s) | **~0.1 %** | ~1 % | |
 | Keeps running in the background | **no services** (Android may keep it cached, idle) | **4 services, 3 processes**, still using CPU | |
-| Permissions requested | **2**³ | **86** | |
+| Permissions requested | **3**³ | **86** | |
+| Filter replacement reminder | **Notification at 10 % and 0 %** (daily check) + in-app and widget warning | Likely a push notification (has a push service and notification permission; not observed during testing) | |
+| Purifier's own reminder | Light ring blinks red ~30 s when the filter is used up (works with any app, or none) | same | |
 
 ¹ On the purifier screen with the dust animation running (purifier on). With the purifier off: ~0.6 %.
 ² On its home screen (device list).
-³ Internet, plus *local network access*, which Android 17 adds automatically to every app with Internet; it isn't granted or used.
+³ Internet, notifications (for filter reminders; you can deny it), plus *local network access*, which Android 17 adds automatically to every app with Internet; it isn't granted or used.
 
 How it was measured (so anyone can repeat it):
 - **Size:** total of the installed APK files (`adb shell pm path` + `stat`)
@@ -77,7 +80,7 @@ How it was measured (so anyone can repeat it):
 
 ### Permissions in detail
 
-**Purifier Lite:** Internet only, which it needs to reach Xiaomi's cloud. Nothing else.
+**Purifier Lite:** Internet (to reach Xiaomi's cloud) and notifications (filter reminders, optional). Nothing else.
 
 **Xiaomi Home** asks for 86, including:
 - **Location** (fine + coarse), granted on this phone
@@ -115,7 +118,7 @@ Purifier Lite is for **daily use** of a purifier that's already set up. Keep Xia
 
 **Not in Purifier Lite:**
 - **History and charts.** It shows the current reading only, no PM2.5 graph over days or weeks
-- **Notifications.** Warnings (bad air, filter, fault, offline) show inside the app, not as phone notifications
+- **Most notifications.** Only filter reminders are sent as phone notifications; other warnings (bad air, fault, offline) show inside the app
 - **Live fan RPM.** The 4 Lite reports a stale RPM value to the cloud, so it isn't shown
 - **Other devices and purifier models.** Only the Air Purifier 4 Lite (`zhimi.airp.rmb1`). Several 4 Lites on one account each get their own controls; the widget shows the first one. Other devices are listed as "not supported yet"
 - **Local Wi‑Fi control.** It always goes through Xiaomi's cloud, so it needs internet, and if Xiaomi's servers are down it can't reach the purifier
@@ -136,6 +139,7 @@ Files:
 - `src/lite/purifier/Cloud.java` is the Xiaomi cloud client (login, RC4-signed MIoT API, purifier properties)
 - `src/lite/purifier/MainActivity.java` is the app screen
 - `src/lite/purifier/Widget.java` is the home-screen widget
+- `src/lite/purifier/FilterCheck.java` is the once-a-day filter check and reminder notifications
 - `res/` holds the widget layout and drawables
 
 The purifier's property IDs come from its public MIoT spec:

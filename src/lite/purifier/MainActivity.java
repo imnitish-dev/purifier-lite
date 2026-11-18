@@ -109,7 +109,14 @@ public class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
-        if (sp.contains("token")) { loading(); tick.post(auto); } else showLogin();
+        if (sp.contains("token")) {
+            loading(); tick.post(auto);
+            FilterCheck.schedule(this);
+            if (android.os.Build.VERSION.SDK_INT >= 33 && !sp.getBoolean("askedNotif", false)) {
+                sp.edit().putBoolean("askedNotif", true).apply();
+                requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 1);
+            }
+        } else showLogin();
     }
 
     @Override protected void onPause() { super.onPause(); tick.removeCallbacks(auto); if (sp.contains("token")) Widget.poke(this); }
@@ -230,7 +237,9 @@ public class MainActivity extends Activity {
                 JSONObject d = list.getJSONObject(i);
                 devs.add(d);
                 if (isPurifier(d) && d.optBoolean("isOnline")) {
-                    vals.put(d.getString("did"), cloud.getProps(d.getString("did")));
+                    Object[] pv = cloud.getProps(d.getString("did"));
+                    if (pv[FILTER] instanceof Number) FilterCheck.notifyFilter(this, sp, num(pv[FILTER]));
+                    vals.put(d.getString("did"), pv);
                 }
             }
             ui(() -> render(devs, vals));
